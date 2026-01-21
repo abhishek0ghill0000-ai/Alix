@@ -1,34 +1,24 @@
-name: Build React Native APK
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:  # Manual trigger
-
+name: Build APK
+on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Setup Node
-      uses: actions/setup-node@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: 20
         cache: 'npm'
-    - name: Install dependencies
-      run: cd client && npm ci
-    - name: Setup Java
-      uses: actions/setup-java@v4
+        cache-dependency-path: client/package-lock.json
+    - run: cd client && npm install  # ci instead of ci if no lock
+    - uses: actions/setup-java@v4
       with:
-        distribution: 'temurin'
         java-version: '17'
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-    - name: Grant execute permission
-      run: cd client/android && chmod +x gradlew
-    - name: Build APK
-      run: cd client && ./android/gradlew assembleDebug
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
+        distribution: 'temurin'
+    - uses: android-actions/setup-android@v3
+    - run: cd client/android && chmod +x gradlew
+    - run: cd client && ./android/gradlew assembleDebug --stacktrace
+    - uses: actions/upload-artifact@v4
       with:
-        name: alix-app-debug.apk
+        name: alix-apk
         path: client/android/app/build/outputs/apk/debug/app-debug.apk
