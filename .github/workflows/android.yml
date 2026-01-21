@@ -1,4 +1,4 @@
-name: Android CI/CD
+name: Synce Android CI/CD
 on: [push, pull_request]
 
 jobs:
@@ -7,34 +7,44 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Java
+    - name: Setup Java 21
       uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
         
-    - name: Setup Node.js
+    - name: Setup Node 20
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: 'npm'
         
+    - name: Install React Native CLI
+      run: npm install -g @react-native-community/cli
+      
     - name: Cache node_modules
       uses: actions/cache@v4
       with:
         path: '**/node_modules'
         key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
         
-    - name: Install dependencies
+    - name: Install client dependencies
       run: |
         cd client
-        npm ci
+        npm ci --legacy-peer-deps
         
-    - name: Generate gradlew
+    - name: Setup Android gradlew
       run: |
         cd client/android
         curl -O https://raw.githubusercontent.com/facebook/react-native/main/packages/react-native/template/android/gradlew
         curl -O https://raw.githubusercontent.com/facebook/react-native/main/packages/react-native/template/android/gradlew.bat
         chmod +x gradlew
+        
+    - name: Generate Metro cache
+      run: |
+        cd client
+        npx react-native start --reset-cache &
+        sleep 30
         
     - name: Clean & Build APK
       run: |
@@ -46,5 +56,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: synce-debug.apk
+        name: synce-app-debug.apk
         path: client/android/app/build/outputs/apk/debug/app-debug.apk
