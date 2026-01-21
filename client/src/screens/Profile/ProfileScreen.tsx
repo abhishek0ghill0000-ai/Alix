@@ -1,3 +1,4 @@
+// client/src/screens/ProfileScreen.tsx
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -9,13 +10,13 @@ import {
   TextInput,
   FlatList,
   Alert,
-  Modal,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from '@expo/vector-icons/MaterialIcons';
+import LottieView from 'lottie-react-native'; // npm i lottie-react-native
 
-const BACKEND_URL = 'https://alix-renderer.com';
+const BACKEND_URL = 'https://alix-renderer.com'; // Aapka backend
 
 interface Profile {
   photo: string;
@@ -27,36 +28,17 @@ interface Profile {
 
 const ProfileScreen = () => {
   const router = useRouter();
-  const { screen } = useLocalSearchParams(); // Ignore if not needed
   const [profile, setProfile] = useState<Profile>({
-    photo: 'https://via.placeholder.com/150?text=👤',
-    username: 'AlixUser',
-    uniqueId: 'ALIX' + Math.floor(Math.random() * 1000000),
-    bio: 'Next-gen social on Alix! 🚀',
-    friendRequests: [],
+    photo: require('../assets/images/placeholders/default-avatar.png'), // ✅ Aapka asset
+    username: 'SynceUser',
+    uniqueId: 'SYNCE' + Math.floor(Math.random() * 1000000),
+    bio: 'Real-time collaboration app! 🚀',
+    friendRequests: ['user123', 'friend456'],
   });
   const [editingBio, setEditingBio] = useState(false);
   const [newBio, setNewBio] = useState('');
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/profile`, {
-        headers: { Authorization: 'Bearer YOUR_JWT_TOKEN' }, // Add auth later
-      });
-      const data = await res.json();
-      setProfile(data);
-    } catch (e) {
-      console.log('Mock profile loaded');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Profile photo change
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return Alert.alert('Permission needed');
@@ -69,40 +51,21 @@ const ProfileScreen = () => {
     });
 
     if (!result.canceled && result.assets.length > 0) {
-      const uri = result.assets[0].uri;
-      setProfile({ ...profile, photo: uri });
-      // Upload: POST to /upload-profile-photo
-      const formData = new FormData();
-      formData.append('photo', { uri } as any);
-      fetch(`${BACKEND_URL}/upload-profile`, { method: 'POST', body: formData });
+      setProfile({ ...profile, photo: { uri: result.assets[0].uri } });
     }
   };
 
   const updateBio = () => {
     setProfile({ ...profile, bio: newBio });
     setEditingBio(false);
-    // PATCH to /profile
   };
 
-  const acceptFriendRequest = async (reqId: string) => {
-    await fetch(`${BACKEND_URL}/friend-request/accept/${reqId}`, { method: 'POST' });
+  const acceptFriendRequest = (reqId: string) => {
     setProfile({
       ...profile,
       friendRequests: profile.friendRequests.filter(id => id !== reqId),
     });
     Alert.alert('Accepted!');
-  };
-
-  const rejectFriendRequest = (reqId: string) => {
-    setProfile({
-      ...profile,
-      friendRequests: profile.friendRequests.filter(id => id !== reqId),
-    });
-  };
-
-  const blockUser = () => {
-    Alert.alert('Blocked');
-    // POST /block
   };
 
   const renderFriendRequest = ({ item }: { item: string }) => (
@@ -113,51 +76,46 @@ const ProfileScreen = () => {
           style={styles.acceptBtn}
           onPress={() => acceptFriendRequest(item)}
         >
-          <Text style={styles.btnText}>Accept</Text>
+          <Image source={require('../assets/icons/subscription/check-mark.png')} style={styles.checkIcon} />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.rejectBtn}
-          onPress={() => rejectFriendRequest(item)}
-        >
-          <Text style={styles.btnText}>Reject</Text>
+        <TouchableOpacity style={styles.rejectBtn}>
+          <Image source={require('../assets/icons/action/icon_close.png')} style={styles.closeIcon} />
         </TouchableOpacity>
       </View>
     </View>
   );
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <Icon name="account-circle" size={100} color="#ccc" />
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
 
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Image source={require('../assets/icons/action/icon_arrow_left.png')} style={styles.navIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Profile</Text>
         <TouchableOpacity style={styles.iconBtn}>
-          <Icon name="more-vert" size={24} color="#fff" />
+          <Image source={require('../assets/icons/action/icon_more_vertical.png')} style={styles.navIcon} />
         </TouchableOpacity>
       </View>
 
       {/* Profile Photo */}
       <TouchableOpacity style={styles.photoContainer} onPress={pickImage}>
-        <Image source={{ uri: profile.photo }} style={styles.photo} />
+        <Image source={profile.photo} style={styles.photo} />
         <View style={styles.editOverlay}>
-          <Icon name="camera-alt" size={20} color="#fff" />
+          <Image source={require('../assets/icons/action/icon_camera.png')} style={styles.cameraIcon} />
         </View>
       </TouchableOpacity>
 
       {/* Username & ID */}
       <Text style={styles.username}>{profile.username}</Text>
       <Text style={styles.uniqueId}>@{profile.uniqueId}</Text>
+
+      {/* Subscription Status */}
+      <View style={styles.subscriptionRow}>
+        <Image source={require('../assets/icons/subscription/premium-crown.png')} style={styles.crownIcon} />
+        <Text style={styles.subscriptionText}>Premium Member</Text>
+        <Image source={require('../assets/icons/status/status-online.png')} style={styles.statusIcon} />
+      </View>
 
       {/* Bio */}
       <View style={styles.bioContainer}>
@@ -168,32 +126,25 @@ const ProfileScreen = () => {
               value={newBio}
               onChangeText={setNewBio}
               multiline
-              maxLength={150}
               placeholder="Update your bio..."
               onSubmitEditing={updateBio}
             />
             <TouchableOpacity style={styles.saveBtn} onPress={updateBio}>
-              <Text style={styles.saveText}>Save</Text>
+              <Image source={require('../assets/icons/action/icon_check.png')} style={styles.saveIcon} />
             </TouchableOpacity>
           </>
         ) : (
           <>
-            <Text style={styles.bio}>{profile.bio || 'Add a bio...'}</Text>
+            <Text style={styles.bio}>{profile.bio}</Text>
             <TouchableOpacity onPress={() => {
               setNewBio(profile.bio);
               setEditingBio(true);
             }}>
-              <Icon name="edit" size={18} color="#007AFF" />
+              <Image source={require('../assets/icons/action/icon_edit.png')} style={styles.editIcon} />
             </TouchableOpacity>
           </>
         )}
       </View>
-
-      {/* Privacy Settings */}
-      <TouchableOpacity style={styles.settingsBtn}>
-        <Text style={styles.settingsText}>Privacy & Account Settings</Text>
-        <Icon name="arrow-forward-ios" size={16} color="#666" />
-      </TouchableOpacity>
 
       {/* Friend Requests */}
       <View style={styles.section}>
@@ -203,22 +154,21 @@ const ProfileScreen = () => {
           renderItem={renderFriendRequest}
           keyExtractor={(item) => item}
           style={styles.list}
+          showsVerticalScrollIndicator={false}
         />
+        {profile.friendRequests.length === 0 && (
+          <Image source={require('../assets/images/feedback/empty-state.png')} style={styles.emptyState} />
+        )}
       </View>
 
-      {/* Block/Report */}
-      <TouchableOpacity style={styles.blockBtn} onPress={blockUser}>
-        <Text style={styles.blockText}>Block / Report Options</Text>
-      </TouchableOpacity>
+      {/* Background */}
+      <Image source={require('../assets/images/backgrounds/profile-bg.png')} style={styles.bgImage} />
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
+  container: { flex: 1, backgroundColor: '#f8f9fa' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -228,28 +178,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     backgroundColor: '#007AFF',
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  iconBtn: {
-    padding: 8,
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  photoContainer: {
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  photo: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-  },
+  headerTitle: { color: '#fff', fontSize: 20, fontWeight: '600' },
+  iconBtn: { padding: 8 },
+  navIcon: { width: 24, height: 24, tintColor: '#fff' },
+  photoContainer: { alignItems: 'center', marginTop: 20 },
+  photo: { width: 140, height: 140, borderRadius: 70 },
   editOverlay: {
     position: 'absolute',
     bottom: 0,
@@ -258,78 +191,35 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     padding: 8,
   },
-  username: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 12,
-    color: '#333',
-  },
-  uniqueId: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+  cameraIcon: { width: 20, height: 20, tintColor: '#fff' },
+  username: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginTop: 12, color: '#333' },
+  uniqueId: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 8 },
+  subscriptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
   },
-  bioContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 32,
-    marginBottom: 30,
-  },
-  bio: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    lineHeight: 22,
-  },
+  crownIcon: { width: 24, height: 24 },
+  subscriptionText: { fontSize: 16, fontWeight: '600', color: '#34C759', marginHorizontal: 8 },
+  statusIcon: { width: 16, height: 16 },
+  bioContainer: { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 32, marginBottom: 30 },
+  bio: { flex: 1, fontSize: 16, color: '#333', lineHeight: 22 },
   bioInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
-    lineHeight: 22,
     borderWidth: 1,
     borderColor: '#ddd',
     padding: 12,
     borderRadius: 12,
     backgroundColor: '#fff',
     textAlignVertical: 'top',
-    maxHeight: 100,
   },
-  saveBtn: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginLeft: 12,
-  },
-  saveText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  settingsBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-    marginHorizontal: 24,
-    borderRadius: 16,
-    elevation: 2,
-  },
-  settingsText: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-  },
-  section: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-  },
+  saveBtn: { backgroundColor: '#34C759', padding: 12, borderRadius: 12, marginLeft: 12 },
+  saveIcon: { width: 20, height: 20, tintColor: '#fff' },
+  editIcon: { width: 20, height: 20, tintColor: '#007AFF', marginLeft: 8 },
+  section: { padding: 20 },
+  sectionTitle: { fontSize: 20, fontWeight: '600', color: '#333', marginBottom: 16 },
   requestItem: {
     backgroundColor: '#fff',
     padding: 16,
@@ -337,46 +227,21 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     elevation: 1,
   },
-  requestText: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 12,
-  },
-  actionBtns: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  acceptBtn: {
-    flex: 0.45,
-    backgroundColor: '#34C759',
-    padding: 12,
-    borderRadius: 8,
-  },
-  rejectBtn: {
-    flex: 0.45,
-    backgroundColor: '#FF3B30',
-    padding: 12,
-    borderRadius: 8,
-  },
-  btnText: {
-    color: '#fff',
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  list: {
-    maxHeight: 300,
-  },
-  blockBtn: {
-    backgroundColor: '#FF3B30',
-    padding: 16,
-    margin: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  blockText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  requestText: { fontSize: 16, color: '#333', marginBottom: 12 },
+  actionBtns: { flexDirection: 'row', justifyContent: 'space-around' },
+  acceptBtn: { backgroundColor: '#34C759', padding: 12, borderRadius: 8 },
+  rejectBtn: { backgroundColor: '#FF3B30', padding: 12, borderRadius: 8 },
+  checkIcon: { width: 24, height: 24, tintColor: '#fff' },
+  closeIcon: { width: 20, height: 20, tintColor: '#fff' },
+  list: { maxHeight: 300 },
+  emptyState: { width: 150, height: 150, alignSelf: 'center', marginTop: 20 },
+  bgImage: { 
+    position: 'absolute', 
+    bottom: 0, 
+    right: -100, 
+    width: 200, 
+    height: 200,
+    opacity: 0.1 
   },
 });
 
