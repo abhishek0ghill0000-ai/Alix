@@ -30,7 +30,7 @@ jobs:
         cache-dependency-path: client/package-lock.json  # Key fix for your error
 
     - name: Install dependencies
-      run: cd client && npm ci
+  run: cd client && npm ci --legacy-peer-deps
 
     - name: Cache Gradle
       uses: actions/cache@v4
