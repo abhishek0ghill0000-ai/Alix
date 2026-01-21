@@ -38,20 +38,25 @@ jobs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('client/android/gradle/wrapper/gradle-wrapper.properties') }}
+          client/android/app/build/outputs/apk  # APK cache
+        key: ${{ runner.os }}-gradle-${{ hashFiles('client/android/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('client/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    - name: Make gradlew executable
-      run: cd client/android && chmod +x ./gradlew
+    - name: Setup Gradle wrapper
+      run: |
+        cd client/android
+        chmod +x ./gradlew
+        ./gradlew --version  # Verify
 
     - name: Build APK
-      run: cd client/android && ./gradlew assembleRelease --no-daemon
+      run: cd client/android && ./gradlew assembleRelease --no-daemon -PdeprecationWarning=false
       env:
-        GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m"'
+        GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1g -Dkotlin.incremental=false"'
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: android-apk
+        name: synce-android-apk-v${{ github.sha }}
         path: client/android/app/build/outputs/apk/release/app-release.apk
+        retention-days: 30
