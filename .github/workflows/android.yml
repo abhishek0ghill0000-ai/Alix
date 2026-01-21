@@ -1,48 +1,40 @@
-name: Alix APK
-on: [push, workflow_dispatch]
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node 20
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: 'npm'
-        cache-dependency-path: '**/package-lock.json'
-    
-    - name: Install deps (no ci)
-      run: npm install --legacy-peer-deps
-      
-    - name: Setup Java 17
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-    
-    - name: Cache Gradle
-      uses: actions/cache@v4
-      key: gradle-${{ hashFiles('gradle.properties', '**/build.gradle') }}
-      path: |
-        ~/.gradle/caches
-        ~/.gradle/wrapper
-    
-    - name: Check folders
-      run: ls -la android/ || echo "No android, skipping build"
-    
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Grant execute permission for gradlew
+      run: cd client && chmod +x gradlew
+
     - name: Build APK
-      run: |
-        if [ -d "android" ]; then
-          cd android && chmod +x ./gradlew && ./gradlew assembleRelease
-        else
-          echo "No android folder - client-only repo"
-        fi
-      continue-on-error: true
-    
-    - name: Upload everything
+      run: cd client && ./gradlew assembleRelease
+      env:
+        GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"'
+
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Alix-Complete
-        path: .
+        name: app-release.apk
+        path: client/app/build/outputs/apk/release/*.apk
+      
