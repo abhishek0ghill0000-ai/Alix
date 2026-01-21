@@ -1,12 +1,17 @@
-name: Synce Android CI/CD
-on: [push, pull_request]
+name: Synce Android APK
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
     - name: Setup Java 21
       uses: actions/setup-java@v4
       with:
@@ -17,17 +22,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
         
     - name: Install React Native CLI
       run: npm install -g @react-native-community/cli
       
-    - name: Cache node_modules
-      uses: actions/cache@v4
-      with:
-        path: '**/node_modules'
-        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-        
     - name: Install client dependencies
       run: |
         cd client
@@ -40,21 +38,19 @@ jobs:
         curl -O https://raw.githubusercontent.com/facebook/react-native/main/packages/react-native/template/android/gradlew.bat
         chmod +x gradlew
         
-    - name: Generate Metro cache
-      run: |
-        cd client
-        npx react-native start --reset-cache &
-        sleep 30
-        
-    - name: Clean & Build APK
+    - name: Clean project
       run: |
         cd client
         npx react-native clean
-        cd android
+        
+    - name: Build APK
+      run: |
+        cd client/android
         ./gradlew assembleDebug
         
-    - name: Upload APK
+    - name: Upload Synce APK
       uses: actions/upload-artifact@v4
       with:
         name: synce-app-debug.apk
         path: client/android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
