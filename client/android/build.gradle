@@ -1,23 +1,18 @@
 buildscript {
     ext {
         buildToolsVersion = "34.0.0"
-        minSdkVersion = 23
+        minSdkVersion = 21
         compileSdkVersion = 34
         targetSdkVersion = 34
-        ndkVersion rootProject.ext.ndkVersion
-        kotlinVersion = "1.7.10"  // RN Gradle plugin compatible
-        reactNativeVersion = "0.83.1"
+        kotlinVersion = "1.7.10"
     }
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://www.jitpack.io' }
-        gradlePluginPortal()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.1.4")  // Stable with RN plugin
+        classpath("com.android.tools.build:gradle:8.0.2")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
@@ -26,20 +21,5 @@ allprojects {
         google()
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
-        maven {
-            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url("$rootDir/../node_modules/react-native/android")
-        }
-        maven {
-            // Android JSC is installed from npm
-            url("$rootDir/../node_modules/jsc-android/dist")
-        }
-        configurations.all {
-            resolutionStrategy {
-                force 'com.google.code.findbugs:jsr305:1.3.9'
-            }
-        }
     }
 }
-
-apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
