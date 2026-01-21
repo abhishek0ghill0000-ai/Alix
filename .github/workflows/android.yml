@@ -1,0 +1,50 @@
+name: Android CI/CD
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+        
+    - name: Install dependencies
+      run: |
+        cd client
+        npm ci
+        
+    - name: Generate gradlew
+      run: |
+        cd client/android
+        curl -O https://raw.githubusercontent.com/facebook/react-native/main/packages/react-native/template/android/gradlew
+        curl -O https://raw.githubusercontent.com/facebook/react-native/main/packages/react-native/template/android/gradlew.bat
+        chmod +x gradlew
+        
+    - name: Clean & Build APK
+      run: |
+        cd client
+        npx react-native clean
+        cd android
+        ./gradlew assembleDebug
+        
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: synce-debug.apk
+        path: client/android/app/build/outputs/apk/debug/app-debug.apk
