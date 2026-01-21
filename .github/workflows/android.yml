@@ -15,7 +15,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up JDK 17
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install client dependencies
+      run: cd client && npm ci
+
+    - name: Setup JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
@@ -24,11 +33,14 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Generate Gradle wrapper
+      run: cd client/android && chmod +x gradlew || (npm run android:gradle-wrapper)
+
     - name: Grant execute permission for gradlew
-      run: cd client && chmod +x gradlew
+      run: cd client/android && chmod +x gradlew
 
     - name: Build APK
-      run: cd client && ./gradlew assembleRelease
+      run: cd client/android && ./gradlew assembleRelease
       env:
         GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"'
 
@@ -36,5 +48,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: app-release.apk
-        path: client/app/build/outputs/apk/release/*.apk
-      
+        path: client/android/app/build/outputs/apk/release/app-release.apk
