@@ -1,0 +1,22 @@
+{
+  "name": "alix-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "client": "cd client && npm run",
+    "server": "cd server && npm run",
+    "install:all": "npm install && npm run client -- install && npm run server -- install",
+    "start": "npm run client -- start"
+  },
+  "devDependencies": {
+    "react-native": "^0.75.4"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
