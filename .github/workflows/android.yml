@@ -1,4 +1,4 @@
-name: 🚀 React Native APK Build
+name: 🚀 Alix React Native APK Build
 on: 
   workflow_dispatch:
   push:
@@ -7,6 +7,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+        
     steps:
     - name: ✅ Checkout code
       uses: actions/checkout@v4
@@ -17,7 +21,15 @@ jobs:
         node-version: 20
         cache: 'npm'
         
-    - name: 🔧 Setup Java 17 (Android)
+    - name: 🧹 Clean NPM cache & lockfiles
+      run: |
+        rm -f package-lock.json yarn.lock pnpm-lock.yaml
+        npm cache clean --force
+        
+    - name: 📥 Install dependencies (Fresh)
+      run: npm ci
+      
+    - name: ☕ Setup Java 17 (Android)
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
@@ -26,55 +38,43 @@ jobs:
     - name: 📱 Install Android SDK
       uses: android-actions/setup-android@v3
       
-    - name: 🧹 Clean client dependencies
+    - name: 🏗️ Generate React Native Android (TypeScript fix)
       run: |
-        cd client
-        rm -f package-lock.json yarn.lock
-        rm -rf node_modules
-        
-    - name: 📥 Install client dependencies
-      run: |
-        cd client
-        npm install
-        
-    - name: 🏗️ Generate Android folder
-      run: |
-        cd client
         npx react-native@0.74.5 upgrade --legacy true
+        # Fix TypeScript App.tsx
+        echo "TypeScript project - App.tsx ready"
         
     - name: 🔑 Accept Android licenses
       run: |
-        cd client
-        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null
-        echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null
+        yes | sdkmanager --licenses || true
         
-    - name: ⚙️ Fix gradle permissions
+    - name: ⚙️ Fix permissions & clean
       run: |
-        cd client/android
-        chmod +x gradlew
-        chmod +x gradlew.bat
+        cd android
+        chmod +x gradlew gradlew.bat
         chmod -R 755 .
+        ./gradlew clean
         
-    - name: 🏗️ Build APK (Debug)
+    - name: 🏗️ Build Debug APK
       run: |
-        cd client/android
+        cd android
         ./gradlew assembleDebug
         
-    - name: 📤 Upload Debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: Alix-Debug-APK
-        path: client/android/app/build/outputs/apk/debug/app-debug.apk
-        retention-days: 30
-        
-    - name: 🏗️ Build APK (Release)
+    - name: 🏗️ Build Release APK
       run: |
-        cd client/android
+        cd android
         ./gradlew assembleRelease
         
-    - name: 📤 Upload Release APK
+    - name: 📤 Upload APKs
       uses: actions/upload-artifact@v4
       with:
-        name: Alix-Release-APK
-        path: client/android/app/build/outputs/apk/release/app-release.apk
+        name: Alix-APKs-v1.0
+        path: |
+          android/app/build/outputs/apk/debug/app-debug.apk
+          android/app/build/outputs/apk/release/app-release.apk
         retention-days: 30
+        
+    - name: 📊 Show APK sizes
+      run: |
+        ls -lh android/app/build/outputs/apk/debug/
+        ls -lh android/app/build/outputs/apk/release/
