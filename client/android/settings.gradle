@@ -6,13 +6,17 @@ pluginManagement {
         maven { url 'https://www.jitpack.io' }
     }
 }
-
 plugins {
-    id("com.gradle.enterprise") version("3.17.4") apply false
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
 
 rootProject.name = 'Alix'
 include ':app'
-includeBuild('../node_modules/@react-native/gradle-plugin')
 
-includeBuild('../node_modules/react-native-gradle-plugin')
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle");
+applyNativeModulesSettingsGradle(settings)
+
+// React Native Gradle Plugin include (monorepo path)
+if (settings.hasProperty("newArchEnabled") && settings.newArchEnabled == "true") {
+    includeBuild("../../node_modules/@react-native/gradle-plugin")
+}
