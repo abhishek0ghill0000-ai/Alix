@@ -12,6 +12,7 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:8.0.2")
         classpath("com.facebook.react:react-native-gradle-plugin")
+        // IMPORTANT: yahan koi kotlin-gradle-plugin nahi
     }
 }
 
@@ -19,12 +20,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://www.jitpack.io' }
-        maven {
-            url("$rootDir/../node_modules/react-native/android")
-        }
-        maven {
-            url("$rootDir/../node_modules/@react-native/gradle-plugin")
-        }
+        maven { url "https://www.jitpack.io" }
     }
 }
