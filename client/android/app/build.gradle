@@ -1,10 +1,8 @@
 apply plugin: "com.android.application"
-// REMOVE: apply plugin: "org.jetbrains.kotlin.android"  <-- This causes crash
 apply plugin: "com.facebook.react"
 
 react {
     autolinkLibrariesWithApp()
-    // Hermes enabled by default RN 0.73+
     bundleInRelease = true
     bundleInDebug = false
 }
@@ -42,6 +40,7 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+    
     packagingOptions {
         pickFirst '**/libc++_shared.so'
         pickFirst '**/libjsc.so'
@@ -50,7 +49,6 @@ android {
 }
 
 dependencies {
-    // NO Kotlin stdlib needed - RN handles internally
     implementation("com.facebook.react:react-android")
     implementation("androidx.core:core-ktx:1.12.0")
     
