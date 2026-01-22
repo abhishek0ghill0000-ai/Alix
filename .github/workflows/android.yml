@@ -5,77 +5,64 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
-  android:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Setup Java
+    - name: Cache Gradle
+      uses: actions/cache@v4
+      with:
+        path: client/android/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('client/android/**/build.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Cache node modules
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Setup JDK 17
       uses: actions/setup-java@v4
       with:
-        distribution: 'temurin'
         java-version: '17'
+        distribution: 'temurin'
 
-    - name: Setup Node.js
+    - name: Setup Node 20
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
         cache-dependency-path: 'client/package-lock.json'
 
-    - name: Cache Gradle
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-          client/android/.gradle/caches
-        key: ${{ runner.os }}-gradle-${{ hashFiles('client/android/**.gradle*', 'client/android/gradle.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+    - name: Install dependencies
+      working-directory: client
+      run: npm install  # Changed from ci!
 
-    # ✅ Direct client folder - no root install needed
-    - name: Install client dependencies
-      working-directory: ./client
-      run: |
-        npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+    - name: Clean
+      working-directory: client/android
+      run: ./gradlew clean
 
-    - name: Clean Gradle
-      working-directory: ./client/android
-      run: |
-        chmod +x gradlew
-        ./gradlew clean --no-daemon
-      continue-on-error: true
+    - name: Create assets dir
+      run: mkdir -p client/android/app/src/main/assets
 
-    - name: Create assets directory
-      working-directory: ./client/android/app/src/main
-      run: |
-        mkdir -p assets
-
-    - name: Build React Native bundle
-      working-directory: ./client
-      run: |
-        npx react-native bundle \
-          --platform android \
-          --dev false \
-          --entry-file index.js \
-          --bundle-output android/app/src/main/assets/index.android.bundle \
-          --assets-dest android/app/src/main/res
+    - name: Bundle JS
+      working-directory: client
+      run: npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
 
     - name: Build APK
-      working-directory: ./client/android
-      run: |
-        chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon
+      working-directory: client/android
+      run: ./gradlew assembleDebug
 
-    - name: Upload APK artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug.apk
-        path: app/build/outputs/apk/debug/app-debug.apk
-        retention-days: 7
+        path: client/android/app/build/outputs/apk/debug/app-debug.apk
