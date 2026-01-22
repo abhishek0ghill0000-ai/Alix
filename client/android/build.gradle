@@ -7,9 +7,16 @@ buildscript {
         ndkVersion = "25.1.8937393"
         kotlinVersion = "1.8.22"
     }
+    allprojects {
     repositories {
-        google()
         mavenCentral()
+        mavenLocal()
+        google()  // Last rakho
+        maven { url 'https://www.jitpack.io' }
+        flatDir {
+            dirs "$rootDir/../node_modules/react-native/android"
+        }
+    }
     }
     dependencies {
         classpath("com.android.tools.build:gradle:7.4.2")
