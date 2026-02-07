@@ -1,0 +1,26 @@
+{
+  "name": "alix-app",
+  "displayName": "Alix",
+  "android": {
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/images/logo/logo.png",
+      "backgroundColor": "#F8FAFC"
+    }
+  },
+  "orientation": "portrait",
+  "icon": "./assets/images/logo/logo.png",
+  "splash": {
+    "image": "./assets/images/logo/logo.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#F8FAFC"
+  },
+  "updates": {
+    "fallbackToCacheTimeout": 0
+  },
+  "assetBundlePatterns": [
+    "**/*"
+  ],
+  "ios": {
+    "supportsTablet": true
+  }
+}

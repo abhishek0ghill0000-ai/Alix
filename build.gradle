@@ -1,0 +1,35 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.1.0")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+ext {
+    minSdkVersion = 24
+    targetSdkVersion = 34
+    compileSdkVersion = 34
+    buildToolsVersion = "34.0.0"
+    ndkVersion = "26.1.10909125"
+}
+configurations.all {
+    resolutionStrategy {
+        force "androidx.core:core:1.10.1"
+        eachDependency { details ->
+            if (details.requested.group == "androidx.core" && details.requested.name == "core") {
+                details.useVersion "1.10.1"
+                details.because "Force consistent androidx.core version"
+            }
+        }
+    }
+}
