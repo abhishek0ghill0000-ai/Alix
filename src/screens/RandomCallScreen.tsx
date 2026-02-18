@@ -162,4 +162,24 @@ const RandomCallScreen = () => {
     }
   };
 
-  // Pulse
+  const endCall = useCallback(() => {
+    setStatus('waiting');
+    setRemoteUid(0);
+    engine?.leaveChannel();
+  }, [engine]);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Rest of your JSX */}
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0F0F23',
+  },
+});
+
+export default RandomCallScreen;

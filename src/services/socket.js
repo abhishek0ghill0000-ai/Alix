@@ -34,52 +34,6 @@ export const disconnectSocket = () => {
   }
 };
 
-// ===== CHATSCREEN के लिए Socket Events =====
-
-// Message events
-socket.on('connect', () => {
-  console.log('✅ Socket connected:', socket.id);
-});
-
-socket.on('disconnect', () => {
-  console.log('❌ Socket disconnected');
-});
-
-socket.on('connect_error', (error) => {
-  console.log('Socket connect error:', error.message);
-});
-
-// Real-time message events
-socket.on('messageReceived', (message) => {
-  console.log('📨 New message:', message);
-});
-
-socket.on('messageRead', (data) => {
-  console.log('👁️ Message read:', data);
-});
-
-// Typing indicator
-socket.on('typing', (data) => {
-  console.log('⌨️ Typing:', data);
-});
-
-socket.on('stopTyping', (data) => {
-  console.log('⏹️ Stop typing:', data);
-});
-
-// Call events
-socket.on('callInitiated', (callData) => {
-  console.log('📞 Incoming call:', callData);
-});
-
-socket.on('callAccepted', (callData) => {
-  console.log('✅ Call accepted:', callData);
-});
-
-socket.on('callEnded', (callData) => {
-  console.log('📴 Call ended:', callData);
-});
-
 // ===== Helper functions =====
 
 // Send message via socket (real-time)

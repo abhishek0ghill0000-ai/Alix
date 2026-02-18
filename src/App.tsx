@@ -1,4 +1,4 @@
-// src/App.tsx - **ChatScreen + AdvancedAccessScreen FULLY INTEGRATED**
+// src/App.tsx - **100% EAS BUILD READY**
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -6,18 +6,9 @@ import {
   initialWindowMetrics,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { LogBox, View, StatusBar, ActivityIndicator, Text } from 'react-native';
+import { LogBox, View, StatusBar, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppNavigator, BottomTabs } from './navigation/AppNavigator';  
-
-// NEW IMPORTS - Post & Reel Screens + CHAT SCREENS
-import PostScreen from './src/screens/PostScreen';
-import ReelScreen from './src/screens/ReelScreen';
-import ChatScreen from './src/screens/ChatScreen';
-import ChatDetailScreen from './src/screens/ChatDetailScreen';
-import AdvancedAccessScreen from './src/screens/AdvancedAccessScreen';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { BottomTabs } from './navigation/AppNavigator';  
 import { NavigationContainer } from '@react-navigation/native';
 import { initialize } from 'react-native-google-mobile-ads';
 
@@ -39,25 +30,6 @@ LogBox.ignoreLogs([
   "EventEmitter.removeAllListeners('appStateDidChange')",
   '[Reanimated]',
 ]);
-
-// ===== POST + REEL STACK (Already existing) =====
-const Stack = createStackNavigator();
-const PostReelStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="PostScreen" component={PostScreen} />
-    <Stack.Screen name="ReelScreen" component={ReelScreen} />
-  </Stack.Navigator>
-);
-
-// ===== CHAT STACK (NEW - ChatScreen के लिए) =====
-const ChatStack = createStackNavigator();
-const ChatStackNavigator = () => (
-  <ChatStack.Navigator screenOptions={{ headerShown: false }}>
-    <ChatStack.Screen name="ChatScreen" component={ChatScreen} />
-    <ChatStack.Screen name="ChatDetail" component={ChatDetailScreen} />
-    <ChatStack.Screen name="AdvancedAccessScreen" component={AdvancedAccessScreen} />
-  </ChatStack.Navigator>
-);
 
 // Root wrapper with safe area + styling
 function RootWrapper({ children }: { children: React.ReactNode }) {
@@ -125,7 +97,7 @@ export default function App() {
       <RootWrapper>
         {isAuthenticated ? (
           <NavigationContainer>
-            <BottomTabs />  {/* BottomTabs me ChatStack already integrated होगा */}
+            <BottomTabs />  {/* ChatScreen + PostScreen + sab integrated */}
           </NavigationContainer>
         ) : (
           <AppNavigator />

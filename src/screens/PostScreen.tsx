@@ -12,10 +12,9 @@ import { useAds } from '../hooks/useAds';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
-const PostScreen = () => {
-  const navigation = useNavigation(); 
 
 const PostScreen = () => {
+  const navigation = useNavigation(); 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);

@@ -1,11 +1,10 @@
-// src/hooks/useAds.ts
-import { useState, useEffect, useCallback } from 'react';
+// src/hooks/useAds.ts - **react-native-google-mobile-ads के साथ**
+import { useState, useCallback } from 'react';
 import { 
   RewardedAd, 
   RewardedAdEventType, 
   TestIds 
-} from '@react-native-firebase/admob';
-import { ADS_CONFIG } from '../config/adsConfig';
+} from 'react-native-google-mobile-ads';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface UseAdsReturn {
@@ -21,25 +20,31 @@ export const useAds = (): UseAdsReturn => {
   const [isAdReady, setIsAdReady] = useState(false);
   const [rewardedCallsToday, setRewardedCallsToday] = useState(0);
 
-  // Existing rewarded ad logic - unchanged
+  // Rewarded ad logic - react-native-google-mobile-ads के साथ
   useEffect(() => {
-    const rewarded = RewardedAd.createForAdRequest(ADS_CONFIG.ADMOB.REWARDED_VIDEO, {
-      requestNonPersonalizedAdsOnly: true,
-    });
+    const rewarded = RewardedAd.createForAdRequest(
+      __DEV__ ? TestIds.REWARDED : 'ca-app-pub-3781718251647447/7472150463', 
+      {
+        requestNonPersonalizedAdsOnly: true,
+      }
+    );
 
-    const unsubscribeLoaded = rewarded.onAdEvent((type) => {
-      if (type === RewardedAdEventType.LOADED) {
+    const unsubscribeLoaded = rewarded.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
         setIsAdReady(true);
       }
-    });
+    );
 
-    const unsubscribeEarned = rewarded.onAdEvent((type) => {
-      if (type === RewardedAdEventType.EARNED_REWARD) {
+    const unsubscribeEarned = rewarded.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      () => {
         console.log('✅ Rewarded ad completed!');
       }
-    });
+    );
 
     rewarded.load();
+
     return () => {
       unsubscribeLoaded();
       unsubscribeEarned();
@@ -52,7 +57,9 @@ export const useAds = (): UseAdsReturn => {
   };
 
   const watchAdForCall = async (): Promise<boolean> => {
-    const rewarded = RewardedAd.createForAdRequest(ADS_CONFIG.ADMOB.REWARDED_VIDEO);
+    const rewarded = RewardedAd.createForAdRequest(
+      __DEV__ ? TestIds.REWARDED : 'ca-app-pub-3781718251647447/7472150463'
+    );
     
     try {
       const result = await rewarded.show();
@@ -91,7 +98,6 @@ export const useAds = (): UseAdsReturn => {
       result.push(item);
       if ((index + 1) % 7 === 0) {
         // Har 7th item ke baad ad insert karo
-        // Note: Actual ad fetch PostScreen/ReelScreen me onEndReached me karna better hoga
         result.push({ isAd: true, placeholder: true, type: 'ad' });
       }
     });
@@ -105,7 +111,7 @@ export const useAds = (): UseAdsReturn => {
     isAdReady,
     rewardedCallsToday,
     watchAdForCall,
-    fetchAd,           // NEW
-    insertAdEvery7th,  // NEW
+    fetchAd,
+    insertAdEvery7th,
   };
 };

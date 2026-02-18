@@ -25,16 +25,26 @@
             "kotlinVersion": "1.9.24"
           }
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3781718251647447~8945014239",
+          "iosAppId": "ca-app-pub-3781718251647447~8945014239"
+        }
       ]
     ],
     "android": {
       "package": "com.client",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "extra": {
       "eas": {
-        "projectId": "ecfd492e-0b38-4e29-b8b9-67e69ed47615"
+        "projectId": "fbd7e0f1-d3aa-43d6-baea-b09681b7aed8"
       }
     }
   }
