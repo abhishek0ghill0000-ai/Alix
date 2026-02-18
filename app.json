@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Alix",
+    "slug": "Alix",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F0F23"
+    },
+    "plugins": [
+      "expo-image-picker",
+      "expo-document-picker",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "gradleVersion": "8.4",
+            "agpVersion": "8.4.0",
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "minSdkVersion": 23,
+            "kotlinVersion": "1.9.24"
+          }
+        }
+      ]
+    ],
+    "android": {
+      "package": "com.client",
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 1
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ecfd492e-0b38-4e29-b8b9-67e69ed47615"
+      }
+    }
+  }
+}
